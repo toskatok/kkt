@@ -37,26 +37,26 @@ func NewConsumerGroup(topic string, brokers []string, clientID string) (*Consume
 
 // Run runs the consumer group to consume from kafka
 func (gc *ConsumerGroup) Run() {
-	defer gc.ConsumerGroup.Close()
-
 	topics := []string{gc.Topic}
 	handler := kktConsumerGroupHandler{}
 
 	ctx := context.Background()
-	for {
-		select {
-		case <-gc.done:
-			return
-		default:
-			err := gc.ConsumerGroup.Consume(ctx, topics, handler)
-			if err != nil {
-				logrus.Errorf("samara consumer group: %s", err)
-			}
+	go func() {
+		err := gc.ConsumerGroup.Consume(ctx, topics, handler)
+		if err != nil {
+			logrus.Errorf("samara consumer group: %s", err)
 		}
+	}()
+
+	<-gc.done
+	if err := gc.ConsumerGroup.Close(); err != nil {
+		logrus.Errorf("samara consumer group close error: %s", err)
 	}
+	close(gc.done)
 }
 
 // Exit closes the consumer group and exits from its loop
 func (gc *ConsumerGroup) Exit() {
-	close(gc.done)
+	gc.done <- struct{}{}
+	<-gc.done
 }

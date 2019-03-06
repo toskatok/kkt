@@ -9,11 +9,11 @@ type kktConsumerGroupHandler struct {
 }
 
 func (h kktConsumerGroupHandler) Setup(sess sarama.ConsumerGroupSession) error {
-	logrus.Infof("Hello world of kafka (%s) in generation (%d)\n", "ride", sess.GenerationID())
+	logrus.Infof("Hello world of kafka in generation (%d)", sess.GenerationID())
 	return nil
 }
 func (h kktConsumerGroupHandler) Cleanup(sess sarama.ConsumerGroupSession) error {
-	logrus.Infof("Bye bye kafka (%s) in generation (%d)\n", "ride", sess.GenerationID())
+	logrus.Infof("Bye bye kafka in generation (%d)", sess.GenerationID())
 	return nil
 }
 func (h kktConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
