@@ -54,7 +54,11 @@ func main() {
 	}()
 
 	// kafka consumer
-	cg, err := kafka.NewConsumerGroup(viper.GetString("kafka.topic"), viper.GetStringSlice("kafka.brokers"), viper.GetString("kafka.client-id"))
+	cg, err := kafka.NewConsumerGroup(
+		viper.GetString("kafka.topic"),
+		viper.GetStringSlice("kafka.brokers"),
+		viper.GetString("kafka.client-id"),
+	)
 	if err != nil {
 		log.Fatalf("Kafka Consumer Service failed with %s", err)
 	}
@@ -69,6 +73,7 @@ func main() {
 	fmt.Println("18.20 As always ... left me alone")
 
 	// kafka consumer
+	cg.Exit()
 
 	// echo server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
