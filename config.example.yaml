@@ -1,0 +1,12 @@
+env: DEBUG
+server:
+  address: ":8585"
+
+kafka:
+  client-id: "test-id"
+  topic: "ride"
+  brokers:
+    - "192.168.73.6:9092"
+
+logger:
+  level: 1
