@@ -16,8 +16,8 @@ type ConsumerGroup struct {
 	done chan struct{}
 }
 
-// New creates new consumer group based on given configuration
-func New(topic string, brokers []string, clientID string) (*ConsumerGroup, error) {
+// NewConsumerGroup creates new consumer group based on given configuration
+func NewConsumerGroup(topic string, brokers []string, clientID string) (*ConsumerGroup, error) {
 	config := sarama.NewConfig()
 	config.Version = sarama.V1_0_0_0
 	config.ClientID = clientID
@@ -37,6 +37,8 @@ func New(topic string, brokers []string, clientID string) (*ConsumerGroup, error
 
 // Run runs the consumer group to consume from kafka
 func (gc *ConsumerGroup) Run() {
+	defer gc.ConsumerGroup.Close()
+
 	topics := []string{gc.Topic}
 	handler := kktConsumerGroupHandler{}
 
@@ -44,6 +46,7 @@ func (gc *ConsumerGroup) Run() {
 	for {
 		select {
 		case <-gc.done:
+			return
 		default:
 			err := gc.ConsumerGroup.Consume(ctx, topics, handler)
 			if err != nil {
@@ -55,6 +58,5 @@ func (gc *ConsumerGroup) Run() {
 
 // Exit closes the consumer group and exits from its loop
 func (gc *ConsumerGroup) Exit() {
-	gc.ConsumerGroup.Close()
-
+	close(gc.done)
 }
