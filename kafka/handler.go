@@ -19,7 +19,7 @@ func (h kktConsumerGroupHandler) Cleanup(sess sarama.ConsumerGroupSession) error
 func (h kktConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
 		logrus.Infof("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
-		logrus.Debugln(msg.Value)
+		logrus.Debugln(string(msg.Value))
 		sess.MarkMessage(msg, "")
 	}
 	return nil
