@@ -42,9 +42,12 @@ func (gc *ConsumerGroup) Run() {
 
 	ctx := context.Background()
 	go func() {
-		err := gc.ConsumerGroup.Consume(ctx, topics, handler)
-		if err != nil {
-			logrus.Errorf("samara consumer group: %s", err)
+		for {
+			err := gc.ConsumerGroup.Consume(ctx, topics, handler)
+			if err != nil {
+				logrus.Errorf("samara consumer group: %s", err)
+				return
+			}
 		}
 	}()
 
