@@ -40,18 +40,24 @@ func (gc *ConsumerGroup) Run() {
 	topics := []string{gc.Topic}
 	handler := kktConsumerGroupHandler{}
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		for {
-			err := gc.ConsumerGroup.Consume(ctx, topics, handler)
-			if err != nil {
-				logrus.Errorf("samara consumer group: %s", err)
+			select {
+			case <-ctx.Done():
 				return
+			default:
+				err := gc.ConsumerGroup.Consume(ctx, topics, handler)
+				if err != nil {
+					logrus.Errorf("samara consumer group: %s", err)
+					return
+				}
 			}
 		}
 	}()
 
 	<-gc.done
+	cancel()
 	if err := gc.ConsumerGroup.Close(); err != nil {
 		logrus.Errorf("samara consumer group close error: %s", err)
 	}
