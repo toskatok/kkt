@@ -23,7 +23,7 @@ func NewConsumerGroup(topic string, brokers []string, clientID string) (*Consume
 	config.Version = sarama.V2_0_0_0
 	config.ClientID = clientID
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
-	config.Consumer.Return.Errors = true
+	config.Consumer.Return.Errors = false
 
 	gc, err := sarama.NewConsumerGroup(brokers, fmt.Sprintf("%s-%s", "kkt", topic), config)
 	if err != nil {
@@ -42,7 +42,7 @@ func (gc *ConsumerGroup) Run() {
 	topics := []string{gc.Topic}
 	handler := kktConsumerGroupHandler{
 		lck:             &sync.RWMutex{},
-		repeatedOffsets: make(map[int64]bool),
+		repeatedOffsets: make(map[string]bool),
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
