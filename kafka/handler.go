@@ -10,7 +10,7 @@ import (
 var repeatedOffsets = map[int64]bool{}
 
 type kktConsumerGroupHandler struct {
-	lck sync.Mutex
+	lck *sync.RWMutex
 }
 
 func (h kktConsumerGroupHandler) Setup(sess sarama.ConsumerGroupSession) error {
@@ -25,13 +25,17 @@ func (h kktConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, 
 	for msg := range claim.Messages() {
 		logrus.Infof("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
 
-		h.lck.Lock()
-		if repeatedOffsets[msg.Offset] {
+		h.lck.RLock()
+		ok := repeatedOffsets[msg.Offset]
+		h.lck.RUnlock()
+
+		if ok {
 			logrus.Errorf("Duplicated message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
 		} else {
+			h.lck.Lock()
 			repeatedOffsets[msg.Offset] = true
+			h.lck.Unlock()
 		}
-		h.lck.Unlock()
 
 		logrus.Debugln(string(msg.Value))
 		sess.MarkMessage(msg, "")

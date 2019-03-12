@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
@@ -39,7 +40,7 @@ func NewConsumerGroup(topic string, brokers []string, clientID string) (*Consume
 // Run runs the consumer group to consume from kafka
 func (gc *ConsumerGroup) Run() {
 	topics := []string{gc.Topic}
-	handler := kktConsumerGroupHandler{}
+	handler := kktConsumerGroupHandler{&sync.RWMutex{}}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
