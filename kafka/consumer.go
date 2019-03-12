@@ -40,7 +40,10 @@ func NewConsumerGroup(topic string, brokers []string, clientID string) (*Consume
 // Run runs the consumer group to consume from kafka
 func (gc *ConsumerGroup) Run() {
 	topics := []string{gc.Topic}
-	handler := kktConsumerGroupHandler{&sync.RWMutex{}}
+	handler := kktConsumerGroupHandler{
+		lck:             &sync.RWMutex{},
+		repeatedOffsets: make(map[int64]bool),
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
