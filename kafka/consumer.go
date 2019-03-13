@@ -53,26 +53,18 @@ func (gc *ConsumerGroup) Run() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				err := gc.ConsumerGroup.Consume(ctx, topics, handler)
-				if err != nil {
-					logrus.Errorf("samara consumer group: %s", err)
-					return
-				}
-			}
+		err := gc.ConsumerGroup.Consume(ctx, topics, handler)
+		if err != nil {
+			logrus.Errorf("samara consumer group: %s", err)
 		}
+		if err := gc.ConsumerGroup.Close(); err != nil {
+			logrus.Errorf("samara consumer group close error: %s", err)
+		}
+		close(gc.done)
 	}()
 
 	<-gc.done
 	cancel()
-	if err := gc.ConsumerGroup.Close(); err != nil {
-		logrus.Errorf("samara consumer group close error: %s", err)
-	}
-	close(gc.done)
 }
 
 // Exit closes the consumer group and exits from its loop
