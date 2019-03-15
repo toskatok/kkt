@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
@@ -20,10 +21,11 @@ type ConsumerGroup struct {
 // NewConsumerGroup creates new consumer group based on given configuration
 func NewConsumerGroup(topic string, brokers []string, clientID string) (*ConsumerGroup, error) {
 	config := sarama.NewConfig()
-	config.Version = sarama.V2_0_0_0
+	config.Version = sarama.V1_0_0_0
 	config.ClientID = clientID
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
 	config.Consumer.Return.Errors = true
+	config.Consumer.Offsets.Retention = 1 * time.Second
 
 	gc, err := sarama.NewConsumerGroup(brokers, fmt.Sprintf("%s-%s", "kkt", topic), config)
 	if err != nil {
